@@ -5,7 +5,7 @@ include(FetchContent)
 SET(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "Enable testing of the benchmark library.")
 SET(TBB_BUILD_TESTS OFF CACHE BOOL "Build TBB tests and enable testing infrastructure")
 
-find_package(OpenMP REQUIRED)
+
 # target_link_libraries(${PROJECT_NAME} PRIVATE OpenMP::OpenMP_CXX)
 
 FetchContent_Declare(

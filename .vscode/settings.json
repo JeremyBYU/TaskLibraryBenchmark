@@ -70,5 +70,6 @@
         "cfenv": "cpp",
         "typeinfo": "cpp",
         "bit": "cpp"
-    }
+    },
+    "python.pythonPath": "/home/jeremy/miniconda3/envs/ppb/bin/python"
 }
