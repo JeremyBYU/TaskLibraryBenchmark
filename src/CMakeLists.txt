@@ -20,8 +20,10 @@ find_package(OpenMP REQUIRED)
 add_executable(run-bench ${CMAKE_CURRENT_SOURCE_DIR}/run-bench.cpp 
                          ${CMAKE_CURRENT_SOURCE_DIR}/OpenMP/omp_benches.cpp
                          ${CMAKE_CURRENT_SOURCE_DIR}/TaskFlow/tf_benches.cpp
+                         ${CMAKE_CURRENT_SOURCE_DIR}/TBB/tbb_benches.cpp
+                         ${CMAKE_CURRENT_SOURCE_DIR}/Marl/marl_benches.cpp
                         )
 target_include_directories(run-bench PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 
 target_link_libraries(run-bench PRIVATE benchmark Threads::Threads OpenMP::OpenMP_CXX)
-target_link_libraries_system(run-bench Cpp-Taskflow)
+target_link_libraries_system(run-bench Cpp-Taskflow tbb marl)

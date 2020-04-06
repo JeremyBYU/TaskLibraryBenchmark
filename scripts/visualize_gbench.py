@@ -44,7 +44,8 @@ def create_df(fpath:str):
 def plot_graphs(df:pd.DataFrame):
     df['problem_size'] = df['problem_size'].transform(lambda x: math.pow(2, x))
 
-    g = sns.relplot(x="problem_size", y="mean", hue="task_library", col="threads", row="benchmark_name", kind="line", data=df)
+    df_renamed = df.rename(columns={"problem_size": "Problem Size", "mean": "Time (ms)", "benchmark_name": "Benchmark"})
+    g = sns.relplot(x="Problem Size", y="Time (ms)", hue="task_library", col="threads", row="Benchmark", kind="line", data=df_renamed)
     # sns.relplot(x="problem_size", y="mean", hue="task_library", row="benchmark_name", style="threads", kind="line", data=df)
     plt.show()
 
