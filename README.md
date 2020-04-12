@@ -26,7 +26,7 @@ Plots are then generated using python from the saved output of `benchmark` .
 
 ## Results
 
-![Results](assets/results.png)
+![Results](./assets/results.png)
 
 You can also look at `results/tlb.json` 
 

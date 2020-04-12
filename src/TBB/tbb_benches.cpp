@@ -27,12 +27,10 @@ void BM_BinaryTree_TBB(benchmark::State& state)
 }
 
 BENCHMARK(BM_LinearChain_TBB)
-    ->RangeMultiplier(2)
-    ->Ranges({{2, LC_MAX_PS}, {1, MAX_THREAD}})
+    ->Apply(CustomArguments_LC)
     ->UseRealTime()
     ->Unit(benchmark::kMillisecond);
 BENCHMARK(BM_BinaryTree_TBB)
-    ->RangeMultiplier(2)
-    ->Ranges({{2, BT_MAX_PS}, {1, MAX_THREAD}})
+    ->Apply(CustomArguments_BT)
     ->UseRealTime()
     ->Unit(benchmark::kMillisecond);

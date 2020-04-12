@@ -22,38 +22,25 @@ size_t linear_chain(size_t length, unsigned num_threads)
     defer(scheduler.unbind()); // Automatically unbind before returning.
 
     size_t counter = 0;
-    marl::WaitGroup wg_counter(length);
+    std::vector<marl::Event> events;
+    events.resize(length);
 
-    std::vector<marl::WaitGroup> wg_all;
-    wg_all.reserve(length);
+    events.front().signal();
 
-    for (size_t i = 0; i < length; ++i)
+    for (size_t i = 0; i < length - 1; ++i)
     {
-        // create a wait task
-        wg_all.emplace_back(1);
-        if (i == 0)
-        {
-            marl::schedule([&wg_all, &counter, i, wg_counter] {
-                auto my_wg = wg_all[i]; // copy by value, recommended
-                defer(my_wg.done());
-                defer(wg_counter.done());
+        auto my_event = events[i];
+        auto next_event = events[i + 1];
+        marl::schedule(marl::Task(
+            [=, &counter] {
+                defer(next_event.signal());
+                my_event.wait();
                 counter++;
-            });
-        }
-        else
-        {
-            marl::schedule([&wg_all, &counter, i, wg_counter] {
-                auto prior_wg = wg_all[i - 1]; // copy by value, recommended
-                auto my_wg = wg_all[i];        // copy by value, recommended
-                defer(my_wg.done());
-                defer(wg_counter.done());
-                prior_wg.wait();
-                counter++;
-            });
-        }
+            },
+            marl::Task::Flags::SameThread));
     }
 
-    wg_counter.wait(); // wait until all tasks are completed
+    events.back().wait();; // wait until all tasks are completed
 
     return counter;
 }
@@ -68,49 +55,33 @@ size_t binary_tree(size_t num_layers, unsigned num_threads)
     defer(scheduler.unbind()); // Automatically unbind before returning.
 
     unsigned total_tasks = 1 << num_layers;
-    std::vector<marl::WaitGroup> wg_all;
-    wg_all.reserve(total_tasks);
-    for (int i = 0; i < total_tasks; ++i)
+    std::vector<marl::WaitGroup> all_wgs;
+    all_wgs.resize(total_tasks);
+
+    for (unsigned i = 0; i < total_tasks; i++)
     {
-        wg_all.emplace_back(1);
+        unsigned l = i << 1;
+        unsigned r = l + 1;
+        if (l < all_wgs.size() && r < all_wgs.size())
+        {
+            all_wgs[i].add(2);
+        }
     }
 
     for (unsigned i = total_tasks - 1; i > 0; i--)
     {
-        unsigned l = i << 1;
-        unsigned r = l + 1;
-        if (l < total_tasks && r < total_tasks)
-        {
-            marl::schedule([&wg_all, &counter, l, r, i] {
-                auto my_wg = wg_all[i];
-                defer(my_wg.done());
-
-                auto wg_l = wg_all[l];
-                auto wg_r = wg_all[r];
-                // std::cout << "Task " << i << "; Waiting; depended on " << l << " and " << r << std::endl;
-                wg_l.wait();
-                wg_r.wait();
-
-                // std::cout << "Task " << i << "; Done; depended on " << l << " and " << r << std::endl;
-                counter.fetch_add(1, std::memory_order_relaxed);
-            });
-        }
-        else
-        {
-            marl::schedule([&wg_all, &counter, l, r, i] {
-                auto my_wg = wg_all[i];
-                defer(my_wg.done());
-                // std::cout << "Task " << i << "; Done;" << std::endl;
-                counter.fetch_add(1, std::memory_order_relaxed);
-            });
-        }
+        auto my_wg = all_wgs[i];
+        auto parent_wg = all_wgs[i >> 1];
+        marl::schedule([=, &counter] {
+            defer(parent_wg.done());
+            my_wg.wait();
+            counter.fetch_add(1, std::memory_order_relaxed);
+        });
     }
 
-    auto top_task_wg = wg_all[1];
-    top_task_wg.wait();
+    all_wgs[1].wait();
 
-    size_t final_counter = counter;
-    return final_counter;
+    return counter;
 }
 
 

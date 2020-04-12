@@ -8,10 +8,26 @@
 #include <atomic>
 #include <math.h>
 
+#include <benchmark/benchmark.h>
+
 #define LC_MAX_PS 16
 #define BT_MAX_PS 16
 
 #define MAX_THREAD 8
+
+
+
+inline void CustomArguments_LC(benchmark::internal::Benchmark* b) {
+  for (int i = 2; i <= LC_MAX_PS; i+=2)
+    for (int j = 1; j <= MAX_THREAD; j *= 2)
+      b->Args({i, j});
+}
+
+inline void CustomArguments_BT(benchmark::internal::Benchmark* b) {
+  for (int i = 2; i <= BT_MAX_PS; i+=2)
+    for (int j = 1; j <= MAX_THREAD; j *= 2)
+      b->Args({i, j});
+}
 
 
 // The BELOW code is taken from the Marl Repository for fractal creation
